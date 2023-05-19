@@ -19,6 +19,19 @@ available_subnets = ""
 hosts_per_subnet = ""
 persistent_display = ""
 
+questions_list = [
+    "Interesting octet",
+    "Subnet mask",
+    "Wildcard mask",
+    "Block size",
+    "Network address",
+    "First host address",
+    "Last host address",
+    "Broadcast address",
+    "Number of available subnets",
+    "Number of hosts per subnet"
+]
+
 
 # * * * * * * * Functions * * * * * * * 
 def generate_IP():
@@ -222,7 +235,8 @@ def calculate_hosts_per_subnet():
 # * * * * * * * Steps * * * * * * * 
 
 def main():
-    global IP_address, CIDR, interesting_octet, subnet_mask, block_size, network_address, first_host_address, last_host_address, broadcast_address, available_subnets, hosts_per_subnet, persistent_display
+    global IP_address, CIDR, interesting_octet, subnet_mask, block_size, network_address, first_host_address, last_host_address, broadcast_address, available_subnets, hosts_per_subnet, persistent_display, answers_list
+    #global answers_list, questions_list
 
     # Generate a random IP address with CIDR notation
     generate_IP()
@@ -245,8 +259,21 @@ def main():
     calculate_available_subnets()
     calculate_hosts_per_subnet()
 
-    # Ask the user for the values
-    ask_question("Interesting octet", interesting_octet)
+    answers_list = [
+        interesting_octet,
+        subnet_mask,
+        wildcard_mask,
+        block_size,
+        network_address,
+        first_host_address,
+        last_host_address,
+        broadcast_address,
+        available_subnets,
+        hosts_per_subnet
+    ]
+
+    # Ask the user for the values in a set order
+    '''ask_question("Interesting octet", interesting_octet)
     ask_question("Subnet mask", subnet_mask)
     ask_question("Wildcard mask", wildcard_mask)
     ask_question("Block size", block_size)
@@ -255,7 +282,15 @@ def main():
     ask_question("Last host address", last_host_address)
     ask_question("Broadcast address", broadcast_address)
     ask_question("Number of available subnets", available_subnets)
-    ask_question("Number of hosts per subnet", hosts_per_subnet)
+    ask_question("Number of hosts per subnet", hosts_per_subnet)'''
+
+    # Ask the users for the values in a random order
+    while len(questions_list) > 0:
+        random_q_num = random.randrange(0,len(questions_list))
+        #ask_question(questions_list[random_q_num], answers_list[random_q_num], True)    # DISABLE for LIVE  (Enable to print answers for troubleshooting purposes)
+        ask_question(questions_list[random_q_num], answers_list[random_q_num])
+        questions_list.remove(questions_list[random_q_num])
+        answers_list.remove(answers_list[random_q_num])
 
 
 if __name__ == '__main__':
