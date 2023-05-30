@@ -7,10 +7,10 @@ import random, os
 # * * * * * * * Global Variables * * * * * * * 
 IP_address = ""
 CIDR = 0
-interesting_octet = 0
+interesting_octet = ""
 subnet_mask = ""
 wildcard_mask = ""
-block_size = 0
+block_size = ""
 network_address = ""
 first_host_address = ""
 last_host_address = ""
@@ -19,19 +19,33 @@ available_subnets = ""
 hosts_per_subnet = ""
 persistent_display = ""
 
+questions_list = [
+    "Interesting octet",
+    "Subnet mask",
+    "Wildcard mask",
+    "Block size",
+    "Network address",
+    "First host address",
+    "Last host address",
+    "Broadcast address",
+    "Number of available subnets",
+    "Number of hosts per subnet"
+]
+
 
 # * * * * * * * Functions * * * * * * * 
 def generate_IP():
     global IP_address
 
-    IP_address = str(random.randrange(1,255)) + "." + str(random.randrange(0,255)) + "." + str(random.randrange(0,255)) + "." + str(random.randrange(0,255))
+    IP_address = str(random.randrange(1,255)) + "." + str(random.randrange(0,255)) + "." + str(random.randrange(0,255)) + "." + str(random.randrange(0,255))   # ENABLE for LIVE
+    #IP_address = "70.13.70.142"                                                                                                                               # DISABLE for LIVE
 
 
 def generate_CIDR():
     global CIDR
     
-    CIDR = random.randrange(1,31)
-
+    CIDR = random.randrange(1,31)      # ENABLE for LIVE
+    #CIDR = 28                           # DISABLE for LIVE
 
 def calculate_interesting_octet():
     global interesting_octet
@@ -55,9 +69,14 @@ def ask_question(question, answer, print_a=False):
     else:
         user_answer = input(question + ": ")
 
+    i=0
     while True:
         if str(user_answer) != str(answer):
-            user_answer = input("Incorrect. " + question + ": ")
+            if i > 3:
+                user_answer = input("Incorrect. " + question + "(" + str(answer) + "): ")
+            else:
+                user_answer = input("Incorrect. " + question + ": ")
+                i = i + 1
         else:
             os.system("clear")
             persistent_display = persistent_display + "\n" + question + ": " + str(answer)
@@ -124,6 +143,8 @@ def calculate_block_size():
             break
         i = i + 1
 
+    block_size = str(block_size)
+
 
 def calculate_network_address():
     global network_address
@@ -135,7 +156,7 @@ def calculate_network_address():
     interesting_octet_value = octet_list[int(interesting_octet)-1]
 
     # Intiger division of the value in the interesting octet by block size times block size to get nearest value
-    int_oct_net_address = (int(interesting_octet_value) // block_size) * block_size
+    int_oct_net_address = (int(interesting_octet_value) // int(block_size)) * int(block_size)
 
     # Add network bits to network_address
     i = 0
@@ -154,15 +175,28 @@ def calculate_first_host_address():
     global first_host_address
 
     network_address_octet_list = network_address.split(".")
-
+    network_address_octet_list[3] = int(network_address_octet_list[3])+1
+    first_host_address = network_address_octet_list[0] + "." + network_address_octet_list[1] + "." + network_address_octet_list[2] + "." + str(network_address_octet_list[3])
+    '''
     i = 0
-    while i < 3:
+    while i < 2:
         first_host_address = first_host_address + network_address_octet_list[i] + "."
         i = i + 1
 
     first_host_address = first_host_address + str(int(network_address_octet_list[3]) + 1)
 
+    ##
 
+    updated_int_octet = int(network_address_octet_list[int(interesting_octet)-1]) + 1
+
+    network_address_octet_list[int(interesting_octet)-1] = updated_int_octet
+
+    while i < 4:
+        first_host_address = first_host_address + str(network_address_octet_list[i]) + "."
+        i = i + 1
+
+    first_host_address = first_host_address[0:len(first_host_address)-1]
+    '''
 def calculate_last_host_address():
     global last_host_address
 
@@ -175,7 +209,7 @@ def calculate_last_host_address():
         i = i + 1
 
     if int(interesting_octet) < 4:
-        last_host_address = last_host_address + str(int(interesting_octet_value) + block_size - 1)
+        last_host_address = last_host_address + str(int(interesting_octet_value) + int(block_size) - 1)
 
         while len(last_host_address.split(".")) < 3:
             last_host_address = last_host_address + ".255"
@@ -183,7 +217,7 @@ def calculate_last_host_address():
         last_host_address = last_host_address + ".254"
 
     else:
-        last_host_address = last_host_address + str(int(interesting_octet_value) + block_size - 2)
+        last_host_address = last_host_address + str(int(interesting_octet_value) + int(block_size) - 2)
 
 
 def calculate_broadcast_address():
@@ -210,7 +244,9 @@ def calculate_broadcast_address():
 def calculate_available_subnets():
     global available_subnets
 
-    available_subnets = int(256 / block_size)
+    available_subnets = int(256 / int(block_size))
+
+    available_subnets = str(available_subnets)
 
 
 def calculate_hosts_per_subnet():
@@ -218,11 +254,13 @@ def calculate_hosts_per_subnet():
 
     hosts_per_subnet = 2**(32-CIDR) - 2
 
+    hosts_per_subnet = str(hosts_per_subnet)
 
 # * * * * * * * Steps * * * * * * * 
 
 def main():
-    global IP_address, CIDR, interesting_octet, subnet_mask, block_size, network_address, first_host_address, last_host_address, broadcast_address, available_subnets, hosts_per_subnet, persistent_display
+    global IP_address, CIDR, interesting_octet, subnet_mask, block_size, network_address, first_host_address, last_host_address, broadcast_address, available_subnets, hosts_per_subnet, persistent_display, answers_list
+    #global answers_list, questions_list
 
     # Generate a random IP address with CIDR notation
     generate_IP()
@@ -245,8 +283,22 @@ def main():
     calculate_available_subnets()
     calculate_hosts_per_subnet()
 
-    # Ask the user for the values
-    ask_question("Interesting octet", interesting_octet)
+    answers_list = [
+        interesting_octet,
+        subnet_mask,
+        wildcard_mask,
+        block_size,
+        network_address,
+        first_host_address,
+        last_host_address,
+        broadcast_address,
+        available_subnets,
+        hosts_per_subnet
+    ]
+    
+
+    # Ask the user for the values in a set order
+    '''ask_question("Interesting octet", interesting_octet)
     ask_question("Subnet mask", subnet_mask)
     ask_question("Wildcard mask", wildcard_mask)
     ask_question("Block size", block_size)
@@ -255,7 +307,19 @@ def main():
     ask_question("Last host address", last_host_address)
     ask_question("Broadcast address", broadcast_address)
     ask_question("Number of available subnets", available_subnets)
-    ask_question("Number of hosts per subnet", hosts_per_subnet)
+    ask_question("Number of hosts per subnet", hosts_per_subnet)'''
+
+    # Ask the users for the values in a random order
+    while len(questions_list) > 0:
+        #print(questions_list)
+        #print(answers_list)
+        random_q_num = random.randrange(0,len(questions_list))
+        #ask_question(questions_list[random_q_num], answers_list[random_q_num], True)    # DISABLE for LIVE  (Enable to print answers for troubleshooting purposes)
+        ask_question(questions_list[random_q_num], answers_list[random_q_num])         # ENABLE for LIVE
+        #questions_list.remove(questions_list[random_q_num])
+        #answers_list.remove(answers_list[random_q_num])
+        del questions_list[random_q_num]
+        del answers_list[random_q_num]
 
 
 if __name__ == '__main__':
